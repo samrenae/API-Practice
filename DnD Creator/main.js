@@ -1,45 +1,65 @@
-document.querySelector('select').addEventListener('blur', getInfo)
+document.querySelector('select').addEventListener('click', getInfo)
 document.querySelector('#attribute2').addEventListener('click', getDesc)
-const attributes = [
-    "Ability Scores",
-    "Alignments",
-    "Classes",
-    "Conditions",
-    "Damage Types",
-    "Equipment",
-    "Equipment Categories",
-    "Features",
-    "Languages",
-    "Magic Items",
-    "Magic Schools",
-    "Monsters",
-    "Proficiencies",
-    "Races",
-    "Rule Sections",
-    "Rules",
-    "Skills",
-    "Spells",
-    "Subclasses",
-    "Subraces",
-    "Traits",
-    "Weapon Properties"
-]
+const attributesList = {
+    "Ability Scores": null,
+    "Alignments": null,
+    "Classes": null,
+    "Conditions": null,
+    "Damage Types": null,
+    "Equipment": null,
+    "Equipment Categories": null,
+    "Features": null,
+    "Languages": null,
+    "Magic Items": null,
+    "Magic Schools": null,
+    "Monsters": null,
+    "Proficiencies": null,
+    "Races": null,
+    "Rule Sections": null,
+    "Rules": null,
+    "Skills": null,
+    "Spells": null,
+    "Subclasses": null,
+    "Subraces": null,
+    "Traits": null,
+    "Weapon Properties": null,
+}
+attributesList["Alignments"]=function(data){
+    return data.desc
+}
+attributesList["Classes"]=function(data){
+    let potato = document.createElement('ul')
+    data.proficiencies.forEach(prof => {
+        let chips = document.createElement('li')
+        chips.innerText = prof.name
+        potato.appendChild(chips)
+    })
+    return potato
+}
+const attributes = document.querySelector('#attributes')
+Object.keys(attributesList).forEach(el => {
+    const opt = document.createElement('option')
+    opt.value = el.toLowerCase().replace(/ /g, "-" )
+    opt.innerText = el
+    attributes.appendChild(opt)
+})
+const attTwo = document.querySelector('#attribute2')
 
 function getInfo(){
-    let character = document.getElementById('attributes').value
+    let character = attributes.value
     let url = `https://www.dnd5eapi.co/api/${character}`
     fetch(url)
         .then(res => res.json())
         .then(data => {
             console.log(data)
-            while(document.getElementById('attribute2').firstChild){
-                document.getElementById('attribute2').firstChild.remove()
+            while(attTwo.firstChild){
+                attTwo.firstChild.remove()
             }
             data.results.forEach(obj => {
                 const options = document.createElement('option')
                 options.value = obj.index
                 options.innerHTML= obj.name
-                document.getElementById('attribute2').appendChild(options)
+                attTwo.appendChild(options)
             })
             getDesc()
         })
@@ -48,14 +68,24 @@ function getInfo(){
         })
 }    
 function getDesc(){
-    let character = document.getElementById('attributes').value
-    let char = document.getElementById('attribute2').value
+    let character = attributes.value
+    let char = attTwo.value
     let url = `https://www.dnd5eapi.co/api/${character}/${char}`
     fetch(url)
         .then(res => res.json())
         .then(data => {
             console.log(data)
-            document.getElementById('rest').innerText = data.desc
+            let option = document.querySelector(`[value="${character}"]`)
+            let charVar = option.innerHTML
+            let renderFunction = attributesList[charVar]
+            let text = renderFunction ? renderFunction(data) : ""
+            if(typeof text === "string"){
+                document.getElementById('rest').innerHTML = text
+            }else {
+                document.getElementById('rest').innerHTML = ""
+                document.getElementById('rest').appendChild(text)
+            }
+            
         })
         .catch(err => {
             console.log(`error ${err}`)
