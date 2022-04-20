@@ -1,93 +1,159 @@
-document.querySelector('select').addEventListener('click', getInfo)
-document.querySelector('#attribute2').addEventListener('click', getDesc)
-const attributesList = {
-    "Ability Scores": null,
-    "Alignments": null,
-    "Classes": null,
-    "Conditions": null,
-    "Damage Types": null,
-    "Equipment": null,
-    "Equipment Categories": null,
-    "Features": null,
-    "Languages": null,
-    "Magic Items": null,
-    "Magic Schools": null,
-    "Monsters": null,
-    "Proficiencies": null,
-    "Races": null,
-    "Rule Sections": null,
-    "Rules": null,
-    "Skills": null,
-    "Spells": null,
-    "Subclasses": null,
-    "Subraces": null,
-    "Traits": null,
-    "Weapon Properties": null,
-}
-attributesList["Alignments"]=function(data){
-    return data.desc
-}
-attributesList["Classes"]=function(data){
-    let potato = document.createElement('ul')
-    data.proficiencies.forEach(prof => {
-        let chips = document.createElement('li')
-        chips.innerText = prof.name
-        potato.appendChild(chips)
-    })
-    return potato
-}
-const attributes = document.querySelector('#attributes')
-Object.keys(attributesList).forEach(el => {
-    const opt = document.createElement('option')
-    opt.value = el.toLowerCase().replace(/ /g, "-" )
-    opt.innerText = el
-    attributes.appendChild(opt)
-})
-const attTwo = document.querySelector('#attribute2')
+window.onload = pageLoad();
+document.querySelector("#queryOne").addEventListener("click", getInfo);
+document.querySelector("#queryTwo").addEventListener("change", queryTwoActions);
+const queryOne = document.querySelector("#queryOne");
+const queryTwo = document.querySelector("#queryTwo");
+const queryThree = document.querySelector("#queryThree");
+queryThree.addEventListener("change", queryThreeActions);
 
-function getInfo(){
-    let character = attributes.value
-    let url = `https://www.dnd5eapi.co/api/${character}`
-    fetch(url)
-        .then(res => res.json())
-        .then(data => {
-            console.log(data)
-            while(attTwo.firstChild){
-                attTwo.firstChild.remove()
-            }
-            data.results.forEach(obj => {
-                const options = document.createElement('option')
-                options.value = obj.index
-                options.innerHTML= obj.name
-                attTwo.appendChild(options)
-            })
-            getDesc()
-        })
-        .catch(err => {
-            console.log(`error ${err}`)
-        })
-}    
-function getDesc(){
-    let character = attributes.value
-    let char = attTwo.value
-    let url = `https://www.dnd5eapi.co/api/${character}/${char}`
-    fetch(url)
-        .then(res => res.json())
-        .then(data => {
-            console.log(data)
-            let option = document.querySelector(`[value="${character}"]`)
-            let charVar = option.innerHTML
-            let renderFunction = attributesList[charVar]
-            let text = renderFunction ? renderFunction(data) : ""
-            if(typeof text === "string"){
-                document.getElementById('rest').innerHTML = text
-            }else {
-                document.getElementById('rest').innerHTML = ""
-                document.getElementById('rest').appendChild(text)
-            }
-            
-        })
-        .catch(err => {
-            console.log(`error ${err}`)
-        })
+const selectedItemData = document.querySelector("#selectItemData");
+const unList = document.querySelector('ul')
+let equipmentUrlMappings = {}
+const keyNameMap = {
+    desc: "Description",
+};
+
+function pageLoad() {
+  let url = "https://www.dnd5eapi.co/api";
+  fetch(url)
+    .then((res) => res.json())
+    .then((data) => {
+      Object.keys(data).forEach((el) => {
+        if(el === "levels"){
+          return;
+        }
+        const opt = document.createElement("option");
+        opt.value = el;
+        opt.innerHTML = el.toUpperCase().replace(/-/g, " ");
+        queryOne.appendChild(opt);
+      });
+     getInfo()
+    })
+    .catch((err) => {
+      console.log(`error ${err}`);
+    });
+}
+
+function getInfo() {
+  let queryOneSelect = queryOne.value;
+  let url = `https://www.dnd5eapi.co/api/${queryOneSelect}`;
+  fetch(url)
+    .then((res) => res.json())
+    .then((data) => {
+      while (queryTwo.firstChild) {
+        queryTwo.firstChild.remove();
+      }
+      data.results.forEach((obj) => {
+        const options = document.createElement("option");
+        options.value = obj.index;
+        options.innerHTML = obj.name;
+        queryTwo.appendChild(options);
+      });
+      queryTwo.setAttribute("class", "");
+      return queryTwoActions()
+    })
+    .catch((err) => {
+      console.log(`error ${err}`);
+    });
+}
+
+function queryTwoActions() {
+  let queryOneSelect = queryOne.value;
+  let queryTwoSelect = queryTwo.value;
+  let url = `https://www.dnd5eapi.co/api/${queryOneSelect}/${queryTwoSelect}`;
+  fetch(url)
+    .then((res) => res.json())
+    .then((data) => {
+      queryThree.setAttribute("class", "hidden");
+      selectedItemData.innerText = "";
+      if (queryOneSelect === "equipment-categories"){
+          data.equipment.forEach((obj) => {
+          const options = document.createElement("option");
+          options.value = obj.index;
+          options.innerHTML = obj.name;
+          queryThree.appendChild(options);
+          equipmentUrlMappings[obj.index] = obj.url
+        });
+        queryThreeActions()
+        queryThree.setAttribute("class", "");
+      }
+      else if (queryOneSelect === "rule-sections" || queryOneSelect === "rules") {
+        let converter = new showdown.Converter({ tables: "true" });
+        const html = converter.makeHtml(data.desc);
+        console.log(html);
+        selectedItemData.innerHTML = html;
+        return;
+      }
+      else{
+        queryThree.setAttribute("class", "hidden")
+        displayItem(data);
+        return;
+      }
+      return void 0;
+    })
+    .catch((err) => {
+      console.log(`error ${err}`);
+    });
+}
+
+function queryThreeActions(){
+  let url = `https://www.dnd5eapi.co${equipmentUrlMappings[queryThree.value]}`;
+  fetch(url)
+    .then(res => res.json())
+    .then(data => {
+      selectedItemData.innerText = "";
+      return displayItem(data)
+  }) 
+}
+
+function displayItem(data){
+  Object.entries(data).forEach(([key, value]) => {
+    if (key === "index") return;
+    if (key === "url") return;
+    recurObj(key, value)
+  })
+      
+  return void 0;
+}
+
+function recurObj(k, v){
+     if(k === "index" || k === "url" || k === "subclass_levels"){
+              return
+            } 
+      if(typeof v === "string"){
+         return recurStr(k, v)
+      }else if(typeof v === "object" || Array.isArray(v)){
+          if(isNaN(k)){
+            let titleEl = document.createElement('h3')
+            titleEl.textContent = `${keyNameMap[k] || (k[0].toUpperCase() + k.substring(1)).replace(/_/g, " ")}:`
+            selectedItemData.appendChild(titleEl)
+          }
+          Object.entries(v).forEach(([key, value]) => {
+            return recurObj(key, value)
+          })
+      }else{
+        let listEl = document.createElement("li");
+        listEl.textContent = `${keyNameMap[k] || (k[0].toUpperCase() + k.substring(1)).replace(/_/g, " ")}: ${v}`;
+        selectedItemData.appendChild(unList.appendChild(listEl)); 
+        return;
+      }
+    return;
+}
+
+function recurStr(key, value){
+  if(key === "index" || key === "url"){
+    return
+  }
+  if(isNaN(key)){
+    let listEl = document.createElement("li");
+    listEl.textContent = `${keyNameMap[key] || (key[0].toUpperCase() + key.substring(1)).replace(/_/g, " ")}: ${value}`;
+    selectedItemData.appendChild(unList.appendChild(listEl));
+  }else if(typeof key === "number"){
+    return
+  }else{
+    let titleEl = document.createElement("h4");
+    titleEl.textContent = `${value}`;
+    selectedItemData.appendChild(titleEl); 
+  }
+   return; 
 }

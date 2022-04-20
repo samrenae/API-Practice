@@ -1,8 +1,13 @@
+*{
+    box-sizing: border-box;
+}
 body{
     background: rgb(136,0,0);
 }
-.first, .second, .third{
+.hidden{
+    display: none;
+}
+#selectItemData{
     display: flex;
-    align-items: center;
     justify-content: center;
 }
