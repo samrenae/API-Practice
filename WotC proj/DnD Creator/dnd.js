@@ -1,5 +1,5 @@
 window.onload = urlData;
-document.querySelector("#queryOne").addEventListener("click", getInfo);
+document.querySelector("#queryOne").addEventListener("click", () => getInfo());
 document.querySelector("#queryTwo").addEventListener("change", queryTwoActions);
 const queryOne = document.querySelector("#queryOne");
 const queryTwo = document.querySelector("#queryTwo");
@@ -72,10 +72,12 @@ function urlData() {
       .catch((err) => {
         console.log(`error ${err}`);
       });
+      
   });
 }
 
-function getInfo() {
+function getInfo(pageUrl) {
+  console.log(pageUrl)
   let queryOneSelect = queryOne.value;
   let url = "";
   if (urlCats[urls[0]].includes(queryOneSelect)) {
@@ -83,12 +85,19 @@ function getInfo() {
   } else {
     url = `https://api.open5e.com/${queryOneSelect}`;
   }
+  if (pageUrl){
+    url = pageUrl
+  }
   fetch(url)
     .then((res) => res.json())
     .then((data) => {
-      console.log(data);
-      while (queryTwo.firstChild) {
-        queryTwo.firstChild.remove();
+      if(!pageUrl){
+        while (queryTwo.firstChild) {
+          queryTwo.firstChild.remove();
+        }
+      }
+      if (data.next) {
+        getInfo(data.next)
       }
       data.results.forEach((obj) => {
         const options = document.createElement("option");
@@ -144,7 +153,7 @@ function queryTwoActions() {
         const html = converter.makeHtml(data.desc);
         selectedItemData.innerHTML = html;
         return displayItem(data);
-      } else {
+      }else {
         queryThree.setAttribute("class", "hidden");
         displayItem(data);
         return;
@@ -175,6 +184,8 @@ function displayItem(data) {
 
   return void 0;
 }
+
+
 
 function recurObj(k, v) {
   let queryOneSelect = queryOne.value;
