@@ -8,7 +8,7 @@ searchParam.addEventListener('keypress', function(e){
 })
 
 function getInfo(){
-    fetch(`https://api.scryfall.com/cards/search?q=${searchParam.value}`)
+    fetch(`https://pokeapi.co/api/v2/pokemon/${searchParam.value.toLowerCase()}/`)
         .then((res) => res.json())
         .then((data) => {
             selectedItemData.innerText = "";
@@ -18,17 +18,9 @@ function getInfo(){
 
 function displayItem(data) {
     Object.entries(data).forEach(([key, value]) => {
-      if (key === "object" || 
-      key === 'total_cards' || 
-      key === "has_more" || 
-      key.includes('uri') || 
-      key.includes('id') ||
-      key === "highres_image" ||
-      key === "image_status" ||
-      key.includes('set') ||
-      key === 'preview' ||
-      key === 'edhrec_rank' ||
-      key === "next_page") return;
+      if (key === "url" || 
+      key === 'location_area_encounters')
+    return;
       recurObj(key, value);
     });
   
@@ -38,22 +30,13 @@ function displayItem(data) {
   
   
   function recurObj(k, v) {
-      console.log(k)
-    if(k === 'image_uris'){
+    if(k.includes('back') ||
+    k.includes('front')){
         recurStr(k, v)
     }
     if (
-        k === "object" ||
-        k === 'total_cards' || 
-        k === "has_more" || 
-        k.includes('uri') || 
-        k.includes('id') ||
-        k === "highres_image" ||
-        k === "image_status" ||
-        k.includes('set') ||
-        k === 'preview' ||
-        k === 'edhrec_rank'||
-        k === "next_page" ||
+        k === "url" || 
+        k === 'location_area_encounters'||
         v === null ||
         v === "" ||
         Array.isArray(v) && !v.length
@@ -90,32 +73,28 @@ function displayItem(data) {
   }
   
   function recurStr(key, value) {
-    if(key === 'image_uris'){
+    if(key.includes('back') ||
+    key.includes('front')){
         let cardImg = document.createElement('img')
         cardImg.setAttribute('class', '')
-        cardImg.src = value.normal
+        cardImg.src = value
         selectedItemData.appendChild(cardImg)
+        let listEl = document.createElement('p')
+        listEl.textContent = (key[0].toUpperCase() + key.substring(1)).replace(/_/g, " ")
+        selectedItemData.appendChild(listEl)
+        return
     }
     if (key === "name"){
         let listEl = document.createElement("p");
         listEl.textContent = `${
             (key[0].toUpperCase() + key.substring(1)).replace(/_/g, " ")
-         }: ${(value.replace(/_/g, " "))}`;
+         }: ${(value.replace(/-/g, " "))}`;
         selectedItemData.appendChild(listEl);
         return
     }
     if (
-        key === "object" || 
-        key === 'total_cards' || 
-        key === "has_more" || 
-        key.includes('uri') || 
-        key.includes('id') ||
-        key === "highres_image" ||
-        key === "image_status" ||
-        key.includes('set') ||
-        key === 'preview' ||
-        key === 'edhrec_rank' ||
-        key === "next_page" ||
+        key === "url" || 
+        key === 'location_area_encounters' ||
         value === null ||
         value === "" ||
         Array.isArray(value) && !value.length
@@ -129,13 +108,13 @@ function displayItem(data) {
       let listEl = document.createElement("li");
       listEl.textContent = `${
         (key[0].toUpperCase() + key.substring(1)).replace(/_/g, " ")
-      }: ${(value.replace(/_/g, " "))}`;
+      }: ${(value.replace(/-/g, " "))}`;
       selectedItemData.appendChild(unList.appendChild(listEl));
     } else if (typeof key === "number") {
       return;
     } else {
       let listEl = document.createElement("p");
-      listEl.textContent = `${(value.replace(/_/g, " "))}`;
+      listEl.textContent = `${(value.replace(/-/g, " "))}`;
       selectedItemData.appendChild(listEl);
     }
     return;

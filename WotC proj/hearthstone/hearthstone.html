@@ -4,36 +4,35 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Hearthstone</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="dnd.css">
+    <link rel="stylesheet" href="hearthstone.css">
 </head>
 <body>
     <header>
         <nav>
             <ul>
-                <li><a href="dnd.html"> Dungeons and Dragons </a></li>
+                <li><a href="../DnD Creator/dnd.html"> Dungeons and Dragons </a></li>
                 <li><a href="../MTG/mtg.html"> Magic the Gathering </a></li>
-                <li><a href="../hearthstone/hearthstone.html">Hearthstone</a></li>
+                <li><a href="hearthstone.html">Hearthstone</a></li>
                 <li><a href="../pokeapi/poke.html">Pokemon</a></li>
             </ul>
         </nav>
     </header>
-    <h1>Learn About Dungeons and Dragons!</h1>
+    <section class="top">
+        <h1>Find Your Hearthstone Cards</h1>
+    </section>
     <section class= "select">
-        <select name="queryOne" id="queryOne">
-            
-        </select>
-        <select name="queryTwo" id="queryTwo" class="hidden">
-        
-        </select>
-        <select name="queryThree" id="queryThree" class="hidden"></select>
+        <input id = "searchParam" type="text" placeholder="Search" name="search">
     </section>
     <section id="selectItemData">
         <ul></ul>
+        <img id="cardImg" src="" alt="" class="hidden">
     </section>
-    
+
     <script src="https://unpkg.com/showdown/dist/showdown.min.js"></script>
-    <script src="dnd.js"></script>
+    <script src="hearthstone.js"></script>
 </body>
 </html>
